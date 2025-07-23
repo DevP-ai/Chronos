@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "406181568340",
+    "project_id": "chronos-ai-83380",
+    "storage_bucket": "chronos-ai-83380.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:406181568340:android:21261e439d2d49ddd4b2c1",
+        "android_client_info": {
+          "package_name": "com.dev.ai.app.chronos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "406181568340-holr676ojn0jnh73t1etmv031hgvg53h.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC6jzRcWhbIkft8ORccnIiqXNWJzj7MooQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "406181568340-holr676ojn0jnh73t1etmv031hgvg53h.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
