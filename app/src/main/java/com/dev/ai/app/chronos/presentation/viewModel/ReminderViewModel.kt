@@ -50,6 +50,10 @@ class ReminderViewModel @Inject constructor(
         _uiState.update { it.copy(notes = notes) }
     }
 
+    fun onDateTimeChange(dateTime: Long) {
+        _uiState.update { it.copy(dateTime = dateTime) }
+    }
+
     fun saveReminder(){
         val state = _uiState.value
         val reminder = Reminder(
