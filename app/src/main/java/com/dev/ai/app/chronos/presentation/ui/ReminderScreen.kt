@@ -167,9 +167,9 @@ fun ReminderScreen(
             }
         ){padding->
             Column(
-                  modifier = Modifier
-                   .fillMaxWidth()
-                   .padding(padding)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(padding)
             ) {
                 Text(
                     text = "Share AI Message",
@@ -180,34 +180,46 @@ fun ReminderScreen(
                         .fillMaxWidth()
                         .padding(top = 12.dp)
                 )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = promptText,
-                        onValueChange = { promptText = it },
-                        label = { Text("Enter prompt (e.g., birthday wish)") },
+                if (isFetchingGreeting) {
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.ai_animation))
+                    LottieAnimation(
+                        composition = composition,
+                        iterations = LottieConstants.IterateForever,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 12.dp)
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .padding(vertical = 8.dp)
                     )
-                    IconButton(
-                        onClick = {
-                            if (promptText.isNotEmpty()) {
-                                viewModel.fetchAIGreeting(promptText)
-                                isFetchingGreeting = true
-                                promptText = ""
-                            }
-                        },
-                        enabled = promptText.isNotEmpty()
+                }else{
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            Icons.Default.Send,
-                            contentDescription = "Share AI Message"
+                        OutlinedTextField(
+                            value = promptText,
+                            onValueChange = { promptText = it },
+                            label = { Text("Enter prompt (e.g., birthday wish)") },
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(start = 12.dp)
                         )
+                        IconButton(
+                            onClick = {
+                                if (promptText.isNotEmpty()) {
+                                    viewModel.fetchAIGreeting(promptText)
+                                    isFetchingGreeting = true
+                                    promptText = ""
+                                }
+                            },
+                            enabled = promptText.isNotEmpty()
+                        ) {
+                            Icon(
+                                Icons.Default.Send,
+                                contentDescription = "Share AI Message"
+                            )
+                        }
                     }
                 }
 
