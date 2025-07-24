@@ -1,5 +1,6 @@
 package com.dev.ai.app.chronos.presentation.ui
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,8 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -43,10 +45,12 @@ import com.dev.ai.app.chronos.ui.theme.ChronosTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
-    viewModel: ReminderViewModel = hiltViewModel()
+    viewModel: ReminderViewModel = hiltViewModel(),
+    onLogout: () -> Unit
 ) {
     val reminders by viewModel.reminders.collectAsState()
-
+    val userInfo by viewModel.userInfo.collectAsState()
+    var showProfile by remember { mutableStateOf(false) }
     var isDarkTheme by remember { mutableStateOf(false) }
     var promptText by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
@@ -74,11 +78,36 @@ fun ReminderScreen(
                         }
                     },
                     navigationIcon ={
-                        IconButton(onClick = {}) {
+                        IconButton(onClick = { showProfile = true }) {
                             Icon(
                                 Icons.Default.AccountCircle,
                                 modifier = Modifier.size(36.dp),
-                                contentDescription = "Logout"
+                                contentDescription = "User Menu"
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = showProfile,
+                            onDismissRequest = { showProfile = false }
+                        ) {
+                            Text("Profile")
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        userInfo?.displayName
+                                            ?: userInfo?.email
+                                            ?: "Guest"
+                                    )
+                                },
+                                onClick = { },
+                                enabled = false
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Logout") },
+                                onClick = {
+                                    showProfile = false
+                                    viewModel.logout()
+                                    onLogout()
+                                }
                             )
                         }
                     },
@@ -192,5 +221,7 @@ fun ReminderScreen(
 @Preview
 @Composable
 fun ReminderScreenPreview(modifier: Modifier = Modifier) {
-    ReminderScreen()
+    ReminderScreen(
+        onLogout = {}
+    )
 }
