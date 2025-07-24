@@ -102,8 +102,7 @@ fun ReminderScreen(
             Column(
                   modifier = Modifier
                    .fillMaxWidth()
-                   .padding(padding),
-
+                   .padding(padding)
             ) {
                 Text(
                     text = "Share AI Message",
@@ -112,11 +111,12 @@ fun ReminderScreen(
                     textAlign = TextAlign.Center,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .padding(top = 12.dp)
                 )
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 4.dp),
+                        .padding(vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedTextField(
@@ -125,7 +125,7 @@ fun ReminderScreen(
                         label = { Text("Enter prompt (e.g., birthday wish)") },
                         modifier = Modifier
                             .weight(1f)
-                            .padding(end = 2.dp)
+                            .padding(start = 12.dp)
                     )
                     IconButton(
                         onClick = {
@@ -135,7 +135,8 @@ fun ReminderScreen(
                         },
                         enabled = promptText.isNotEmpty()
                     ) {
-                        Icon(Icons.Default.Send,
+                        Icon(
+                            Icons.Default.Send,
                             contentDescription = "Share AI Message"
                         )
                     }
