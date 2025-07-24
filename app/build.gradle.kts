@@ -77,4 +77,9 @@ dependencies {
     implementation ("com.airbnb.android:lottie-compose:6.5.0")
     implementation("io.coil-kt.coil3:coil-compose:3.3.0")
 
+    implementation("io.ktor:ktor-client-core:3.2.1")
+    implementation("io.ktor:ktor-client-android:3.2.1")
+    implementation("io.ktor:ktor-client-content-negotiation:3.2.1")
+    implementation("io.ktor:ktor-client-cio:3.2.1")
+
 }

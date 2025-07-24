@@ -2,7 +2,9 @@ package com.dev.ai.app.chronos.presentation.viewModel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.dev.ai.app.chronos.data.uistate.GreetingState
 import com.dev.ai.app.chronos.data.uistate.ReminderUiState
+import com.dev.ai.app.chronos.data.usecase.GetAIGreetingUseCase
 import com.dev.ai.app.chronos.domain.model.Reminder
 import com.dev.ai.app.chronos.domain.model.UserInfo
 import com.dev.ai.app.chronos.domain.repository.ReminderRepository
@@ -21,11 +23,15 @@ import javax.inject.Inject
 @HiltViewModel
 class ReminderViewModel @Inject constructor(
     private val reminderRepository: ReminderRepository,
-    private val firebaseAuth: FirebaseAuth
+    private val firebaseAuth: FirebaseAuth,
+    private val getAIGreetingUseCase: GetAIGreetingUseCase,
 ): ViewModel() {
 
     private val _uiState = MutableStateFlow(ReminderUiState())
     val uiState: StateFlow<ReminderUiState> = _uiState
+
+    private val _greetingState = MutableStateFlow<GreetingState>(GreetingState.Idle)
+    val greetingState: StateFlow<GreetingState> = _greetingState
 
     private val _userInfo = MutableStateFlow<UserInfo?>(null)
     val userInfo: StateFlow<UserInfo?> = _userInfo
@@ -98,5 +104,21 @@ class ReminderViewModel @Inject constructor(
             firebaseAuth.signOut()
             _userInfo.value = null
         }
+    }
+
+    fun fetchAIGreeting(prompt: String) {
+        viewModelScope.launch {
+            _greetingState.value = GreetingState.Loading
+            val result = getAIGreetingUseCase(prompt)
+            _greetingState.value = when {
+                result.isSuccess -> GreetingState.Success(result.getOrNull() ?: "")
+                result.isFailure -> GreetingState.Error(result.exceptionOrNull()?.message ?: "Unknown error")
+                else -> GreetingState.Idle
+            }
+        }
+    }
+
+    fun resetGreetingState() {
+        _greetingState.value = GreetingState.Idle
     }
 }

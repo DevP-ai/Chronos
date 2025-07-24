@@ -31,12 +31,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dev.ai.app.chronos.data.uistate.GreetingState
 import com.dev.ai.app.chronos.domain.model.Reminder
 import com.dev.ai.app.chronos.presentation.ui.component.ReminderItem
 import com.dev.ai.app.chronos.presentation.ui.component.ThemeSwitcher
@@ -50,11 +52,38 @@ fun ReminderScreen(
     onLogout: () -> Unit
 ) {
     val reminders by viewModel.reminders.collectAsState()
+    val greetingState by viewModel.greetingState.collectAsState()
+
     val userInfo by viewModel.userInfo.collectAsState()
     var showProfile by remember { mutableStateOf(false) }
     var isDarkTheme by remember { mutableStateOf(false) }
     var promptText by remember { mutableStateOf("") }
+    var isFetchingGreeting by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    // Handle Implicit Intent to Share Message
+    when (greetingState) {
+        is GreetingState.Success -> {
+            val message = (greetingState as GreetingState.Success).message
+            val shareIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                putExtra(Intent.EXTRA_TEXT, message)
+                type = "text/plain"
+            }
+            context.startActivity(Intent.createChooser(shareIntent, "Share AI Message"))
+            viewModel.resetGreetingState()
+            isFetchingGreeting = false
+        }
+        is GreetingState.Error -> {
+            viewModel.resetGreetingState()
+            isFetchingGreeting = false
+        }
+        is GreetingState.Loading -> {
+            isFetchingGreeting = true
+        }
+        else -> {}
+    }
 
     ChronosTheme(darkTheme = isDarkTheme){
         Scaffold (
@@ -152,6 +181,8 @@ fun ReminderScreen(
                     IconButton(
                         onClick = {
                             if (promptText.isNotEmpty()) {
+                                viewModel.fetchAIGreeting(promptText)
+                                isFetchingGreeting = true
                                 promptText = ""
                             }
                         },
