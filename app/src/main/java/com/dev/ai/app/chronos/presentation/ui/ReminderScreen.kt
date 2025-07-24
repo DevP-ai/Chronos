@@ -37,6 +37,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.dev.ai.app.chronos.domain.model.Reminder
 import com.dev.ai.app.chronos.presentation.ui.component.ReminderItem
 import com.dev.ai.app.chronos.presentation.ui.component.ThemeSwitcher
 import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
@@ -192,6 +193,7 @@ fun ReminderScreen(
                         modifier = Modifier
                             .size(32.dp)
                             .clickable{
+                                viewModel.editReminder(Reminder())
                                 showDialog = true
                             }
                     )
