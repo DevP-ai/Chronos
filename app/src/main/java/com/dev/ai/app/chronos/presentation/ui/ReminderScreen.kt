@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,9 +42,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.ai.app.chronos.data.uistate.GreetingState
 import com.dev.ai.app.chronos.domain.model.Reminder
 import com.dev.ai.app.chronos.presentation.ui.component.ReminderItem
+import com.dev.ai.app.chronos.presentation.ui.component.ShimmerEffect
 import com.dev.ai.app.chronos.presentation.ui.component.ThemeSwitcher
 import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
 import com.dev.ai.app.chronos.ui.theme.ChronosTheme
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +57,11 @@ fun ReminderScreen(
     val reminders by viewModel.reminders.collectAsState()
     val greetingState by viewModel.greetingState.collectAsState()
 
+    var showShimmer by remember { mutableStateOf(true) }
+    LaunchedEffect(Unit) {
+        delay(2000)
+        showShimmer = false
+    }
     val userInfo by viewModel.userInfo.collectAsState()
     var showProfile by remember { mutableStateOf(false) }
     var isDarkTheme by remember { mutableStateOf(false) }
@@ -229,21 +237,25 @@ fun ReminderScreen(
                             }
                     )
                 }
-                LazyColumn {
-                    items (reminders){reminder->
-                        ReminderItem(
-                            title = reminder.title,
-                            notes = reminder.notes,
-                            dateTime = reminder.dateTime,
-                            imageUrl = reminder.imageUrl,
-                            onEdit = {
-                                viewModel.editReminder(reminder)
-                                showDialog = true
-                            },
-                            onDelete = {
-                                viewModel.deleteReminder(reminder.id)
-                            }
-                        )
+                if(showShimmer){
+                    ShimmerEffect()
+                }else{
+                    LazyColumn {
+                        items (reminders){reminder->
+                            ReminderItem(
+                                title = reminder.title,
+                                notes = reminder.notes,
+                                dateTime = reminder.dateTime,
+                                imageUrl = reminder.imageUrl,
+                                onEdit = {
+                                    viewModel.editReminder(reminder)
+                                    showDialog = true
+                                },
+                                onDelete = {
+                                    viewModel.deleteReminder(reminder.id)
+                                }
+                            )
+                        }
                     }
                 }
             }
