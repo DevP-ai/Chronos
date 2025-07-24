@@ -39,6 +39,7 @@ fun ReminderScreen(
 ) {
     var isDarkTheme by remember { mutableStateOf(false) }
     var promptText by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
 
     ChronosTheme(darkTheme = isDarkTheme){
         Scaffold (
@@ -80,7 +81,9 @@ fun ReminderScreen(
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = {}) {
+                FloatingActionButton(onClick = {
+                    showDialog = true
+                }) {
                     Icon(
                         Icons.Default.Add,
                         contentDescription = "Add Reminder"
@@ -128,6 +131,17 @@ fun ReminderScreen(
                             contentDescription = "Share AI Message"
                         )
                     }
+                }
+
+                if(showDialog){
+                    ReminderCreateDialog(
+                        onSave = {
+                            showDialog = false
+                        },
+                        onDismiss = {
+                            showDialog = false
+                        }
+                    )
                 }
             }
         }
