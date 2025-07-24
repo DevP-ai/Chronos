@@ -82,7 +82,7 @@ fun ReminderItemPreview(modifier: Modifier = Modifier) {
     ReminderItem(
         title = "Test Title",
         notes = "Test Notes",
-        dateTime= 0L,
+        dateTime= System.currentTimeMillis(),
         imageUrl = "https://static.vecteezy.com/system/resources/thumbnails/036/226/872/small/ai-generated-nature-landscapes-background-free-photo.jpg",
         onEdit = {},
         onDelete = {}

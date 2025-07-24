@@ -53,7 +53,9 @@ class ReminderViewModel @Inject constructor(
     fun onDateTimeChange(dateTime: Long) {
         _uiState.update { it.copy(dateTime = dateTime) }
     }
-
+    fun onImageUrlChange(imageUrl: String?) {
+        _uiState.update { it.copy(imageUrl = imageUrl) }
+    }
     fun saveReminder(){
         val state = _uiState.value
         val reminder = Reminder(
