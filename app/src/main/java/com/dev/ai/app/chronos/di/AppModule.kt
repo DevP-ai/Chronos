@@ -1,6 +1,8 @@
 package com.dev.ai.app.chronos.di
 
+import com.dev.ai.app.chronos.data.repository.ReminderRepositoryImpl
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,4 +15,14 @@ object AppModule {
     @Provides
     @Singleton
     fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideReminderRepository(firestore: FirebaseFirestore, auth: FirebaseAuth): ReminderRepositoryImpl {
+        return ReminderRepositoryImpl(firestore, auth)
+    }
 }

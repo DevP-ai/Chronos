@@ -8,7 +8,7 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-class ReminderRepository(
+class ReminderRepositoryImpl(
     private val firestore: FirebaseFirestore,
     private val auth : FirebaseAuth
 ): ReminderRepository {
