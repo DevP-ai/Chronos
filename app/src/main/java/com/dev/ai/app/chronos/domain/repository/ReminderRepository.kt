@@ -1,4 +1,4 @@
-package com.dev.ai.app.chronos.domain
+package com.dev.ai.app.chronos.domain.repository
 
 import com.dev.ai.app.chronos.domain.model.Reminder
 import kotlinx.coroutines.flow.Flow
