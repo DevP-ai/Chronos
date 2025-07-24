@@ -63,4 +63,10 @@ class ReminderViewModel @Inject constructor(
             imageUrl = reminder.imageUrl
         )
     }
+
+    fun deleteReminder(reminderId: String){
+        viewModelScope.launch {
+            reminderRepository.deleteReminder(reminderId)
+        }
+    }
 }

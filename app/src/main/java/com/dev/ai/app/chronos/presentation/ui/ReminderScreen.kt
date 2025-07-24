@@ -178,7 +178,9 @@ fun ReminderScreen(
                                 viewModel.editReminder(reminder)
                                 showDialog = true
                             },
-                            onDelete = {}
+                            onDelete = {
+                                viewModel.deleteReminder(reminder.id)
+                            }
                         )
                     }
                 }
