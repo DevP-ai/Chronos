@@ -4,10 +4,10 @@ import android.Manifest
 import android.app.TimePickerDialog
 import android.content.ContentValues
 import android.content.Context
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -32,27 +32,26 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
+import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
+import com.dev.ai.app.chronos.util.createImageUri
 import com.google.firebase.storage.FirebaseStorage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
-import kotlin.compareTo
-
 
 @Composable
 fun ReminderCreateDialog(
@@ -70,9 +69,9 @@ fun ReminderCreateDialog(
 
     val calendar = remember {
         Calendar.getInstance().apply {
-            timeInMillis = if(state.dateTime == 0L){
-                System.currentTimeMillis()+60+1000// Default to 1 min from now
-            }else{
+            timeInMillis = if (state.dateTime == 0L) {
+                System.currentTimeMillis() + 60 * 1000 // Default to 1 min from now
+            } else {
                 state.dateTime
             }
         }
@@ -85,7 +84,6 @@ fun ReminderCreateDialog(
                 calendar.set(Calendar.YEAR, year)
                 calendar.set(Calendar.MONTH, month)
                 calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                // Ensure the selected date is not in the past
                 if (calendar.timeInMillis < System.currentTimeMillis()) {
                     calendar.timeInMillis = System.currentTimeMillis() + 60 * 1000
                 }
@@ -112,9 +110,10 @@ fun ReminderCreateDialog(
             },
             calendar.get(Calendar.HOUR_OF_DAY),
             calendar.get(Calendar.MINUTE),
-            false // Set to false to show 12-hour format with AM/PM
+            false
         )
     }
+
     val displayDateTime by remember(state.dateTime) {
         mutableStateOf(
             SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
@@ -126,6 +125,51 @@ fun ReminderCreateDialog(
         mutableStateOf(
             state.dateTime > System.currentTimeMillis() || state.dateTime == 0L
         )
+    }
+
+    // Define cameraLauncher before permissionsLauncher
+    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && cameraImageUri != null) {
+            localImageUri = cameraImageUri
+            uploading = true
+            val storageRef = FirebaseStorage.getInstance().reference
+            val imageRef = storageRef.child("reminder_images/${UUID.randomUUID()}")
+            val uploadTask = imageRef.putFile(cameraImageUri!!)
+            uploadTask.addOnSuccessListener {
+                imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
+                    viewModel.onImageUrlChange(downloadUrl.toString())
+                    uploading = false
+                }
+            }.addOnFailureListener {
+                uploading = false
+                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    val permissionsLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val cameraGranted = permissions[Manifest.permission.CAMERA] == true
+        val storageGranted = permissions[
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_IMAGES
+            } else {
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            }
+        ] == true
+
+        if (cameraGranted && storageGranted) {
+            val uri = createImageUri(context)
+            if (uri != null) {
+                cameraImageUri = uri
+                cameraLauncher.launch(uri)
+            } else {
+                Toast.makeText(context, "Failed to create image URI", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, "Camera and storage permissions are required", Toast.LENGTH_LONG).show()
+        }
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -142,82 +186,35 @@ fun ReminderCreateDialog(
                 }
             }.addOnFailureListener {
                 uploading = false
-            }
-        }
-    }
-
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success: Boolean ->
-        if (success && cameraImageUri != null) {
-            localImageUri = cameraImageUri
-            uploading = true
-            val storageRef = FirebaseStorage.getInstance().reference
-            val imageRef = storageRef.child("reminder_images/${UUID.randomUUID()}")
-            val uploadTask = imageRef.putFile(cameraImageUri!!)
-            uploadTask.addOnSuccessListener {
-                imageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
-                    viewModel.onImageUrlChange(downloadUrl.toString())
-                    uploading = false
-                }
-            }.addOnFailureListener {
-                uploading = false
-            }
-        }
-    }
-
-    fun createImageUri(context: Context): Uri? {
-        val contentResolver = context.contentResolver
-        val contentValues = ContentValues().apply {
-            put(MediaStore.Images.Media.DISPLAY_NAME, "reminder_${System.currentTimeMillis()}.jpg")
-            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                put(MediaStore.Images.Media.IS_PENDING, 1)
-            }
-        }
-        return contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
-    }
-
-    val cameraPermission = Manifest.permission.CAMERA
-
-    var askCameraPermission by remember { mutableStateOf(false) }
-    val cameraPermissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        askCameraPermission = false
-        if (granted) {
-            val uri = createImageUri(context)
-            if (uri != null) {
-                cameraImageUri = uri
-                cameraLauncher.launch(uri)
+                Toast.makeText(context, "Failed to upload image", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     AlertDialog(
-        title = {Text("Add Reminder")},
+        title = { Text("Add Reminder") },
         text = {
-            Column (
-                modifier = Modifier
-                    .wrapContentWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ){
+            Column(
+                modifier = Modifier.wrapContentWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 OutlinedTextField(
                     value = state.title,
                     onValueChange = viewModel::onTitleChange,
-                    label = {Text(text = "Title")}
+                    label = { Text("Title") }
                 )
                 OutlinedTextField(
                     value = state.notes,
                     onValueChange = viewModel::onNoteChange,
-                    label = {Text(text = "Notes (optional)")}
+                    label = { Text("Notes (optional)") }
                 )
-
-                Row (
-                    modifier = Modifier
-                        .fillMaxWidth(),
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ){
-                    Button(onClick = {datePickerDialog.show()}) { Text("Pick Date") }
-                    Button(onClick = {timePickerDialog.show()}) { Text("Pick Time") }
+                ) {
+                    Button(onClick = { datePickerDialog.show() }) { Text("Pick Date") }
+                    Button(onClick = { timePickerDialog.show() }) { Text("Pick Time") }
                 }
                 Text("Date/Time: $displayDateTime")
                 Button(
@@ -242,16 +239,13 @@ fun ReminderCreateDialog(
                         text = { Text("Take Photo") },
                         onClick = {
                             showImagePickerMenu = false
-                            if (ContextCompat.checkSelfPermission(context, cameraPermission) == PackageManager.PERMISSION_GRANTED) {
-                                val uri = createImageUri(context)
-                                if (uri != null) {
-                                    cameraImageUri = uri
-                                    cameraLauncher.launch(uri)
+                            permissionsLauncher.launch(
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES)
+                                } else {
+                                    arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
                                 }
-                            } else {
-                                askCameraPermission = true
-                                cameraPermissionLauncher.launch(cameraPermission)
-                            }
+                            )
                         },
                         leadingIcon = { Icon(Icons.Default.AddCircle, contentDescription = null) }
                     )
@@ -274,27 +268,28 @@ fun ReminderCreateDialog(
                             .clip(CircleShape)
                     )
                 }
-
             }
         },
         onDismissRequest = onDismiss,
         confirmButton = {
             Button(
                 onClick = {
+                    if (localImageUri != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        val contentValues = ContentValues().apply {
+                            put(MediaStore.Images.Media.IS_PENDING, 0)
+                        }
+                        context.contentResolver.update(localImageUri!!, contentValues, null, null)
+                    }
                     onSave()
                 },
                 enabled = state.title.isNotBlank() && isFutureTime && state.dateTime != 0L
             ) {
-                Text(text = "save")
+                Text("Save")
             }
         },
         dismissButton = {
-            Button(
-                onClick = {
-                    onDismiss()
-                }
-            ) {
-                Text(text = "Cancel")
+            Button(onClick = onDismiss) {
+                Text("Cancel")
             }
         }
     )
