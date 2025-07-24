@@ -53,4 +53,14 @@ class ReminderViewModel @Inject constructor(
             _uiState.value = ReminderUiState()
         }
     }
+
+    fun editReminder(reminder: Reminder){
+        _uiState.value = ReminderUiState(
+            id = reminder.id,
+            title = reminder.title,
+            notes = reminder.notes?:"",
+            dateTime = reminder.dateTime,
+            imageUrl = reminder.imageUrl
+        )
+    }
 }

@@ -169,7 +169,8 @@ fun ReminderScreen(
                             dateTime = reminder.dateTime,
                             imageUrl = reminder.imageUrl,
                             onEdit = {
-                                showDialog = false
+                                viewModel.editReminder(reminder)
+                                showDialog = true
                             },
                             onDelete = {}
                         )
