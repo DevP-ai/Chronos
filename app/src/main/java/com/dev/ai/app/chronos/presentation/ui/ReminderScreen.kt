@@ -1,16 +1,19 @@
 package com.dev.ai.app.chronos.presentation.ui
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -34,7 +37,8 @@ import com.dev.ai.app.chronos.ui.theme.ChronosTheme
 fun ReminderScreen(
     modifier: Modifier = Modifier
 ) {
-   var isDarkTheme by remember { mutableStateOf(false) }
+    var isDarkTheme by remember { mutableStateOf(false) }
+    var promptText by remember { mutableStateOf("") }
 
     ChronosTheme(darkTheme = isDarkTheme){
         Scaffold (
@@ -84,7 +88,48 @@ fun ReminderScreen(
                 }
             }
         ){padding->
+            Column(
+                  modifier = Modifier
+                   .fillMaxWidth()
+                   .padding(padding),
 
+            ) {
+                Text(
+                    text = "Share AI Message",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = promptText,
+                        onValueChange = { promptText = it },
+                        label = { Text("Enter prompt (e.g., birthday wish)") },
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
+                    )
+                    IconButton(
+                        onClick = {
+                            if (promptText.isNotEmpty()) {
+                                promptText = ""
+                            }
+                        },
+                        enabled = promptText.isNotEmpty()
+                    ) {
+                        Icon(Icons.Default.Send,
+                            contentDescription = "Share AI Message"
+                        )
+                    }
+                }
+            }
         }
     }
 }
