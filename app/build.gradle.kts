@@ -82,4 +82,8 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:3.2.1")
     implementation("io.ktor:ktor-client-cio:3.2.1")
 
+    implementation("androidx.work:work-runtime-ktx:2.10.2")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+
+
 }
