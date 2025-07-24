@@ -1,5 +1,6 @@
 package com.dev.ai.app.chronos.presentation.ui
 
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,10 +18,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 
 @Composable
@@ -63,8 +68,28 @@ fun ReminderCreateDialog(
         }
     }
 
-
-
+    val timePickerDialog = remember {
+        TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                calendar.set(Calendar.MINUTE, minute)
+                if (calendar.timeInMillis < System.currentTimeMillis()) {
+                    calendar.timeInMillis = System.currentTimeMillis() + 60 * 1000
+                }
+                viewModel.onDateTimeChange(calendar.timeInMillis)
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            false // Set to false to show 12-hour format with AM/PM
+        )
+    }
+    val displayDateTime by remember(state.dateTime) {
+        mutableStateOf(
+            SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+                .format(Date(if (state.dateTime == 0L) System.currentTimeMillis() + 60 * 1000 else state.dateTime))
+        )
+    }
     AlertDialog(
         title = {Text("Add Reminder")},
         text = {
@@ -90,9 +115,9 @@ fun ReminderCreateDialog(
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ){
                     Button(onClick = {datePickerDialog.show()}) { Text("Pick Date") }
-                    Button(onClick = {}) { Text("Pick Time") }
+                    Button(onClick = {timePickerDialog.show()}) { Text("Pick Time") }
                 }
-                Text("Date/Time: ")
+                Text("Date/Time: $displayDateTime")
             }
         },
         onDismissRequest = onDismiss,
