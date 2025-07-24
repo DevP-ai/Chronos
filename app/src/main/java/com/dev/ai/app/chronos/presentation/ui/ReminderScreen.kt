@@ -1,5 +1,7 @@
 package com.dev.ai.app.chronos.presentation.ui
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -87,16 +89,6 @@ fun ReminderScreen(
                         )
                     }
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(onClick = {
-                    showDialog = true
-                }) {
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Add Reminder"
-                    )
-                }
             }
         ){padding->
             Column(
@@ -154,14 +146,27 @@ fun ReminderScreen(
                         }
                     )
                 }
-                Text(
-                    text = "Reminders",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                )
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Reminders",
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Icon(
+                        Icons.Default.Add,
+                        contentDescription = "Add Reminder",
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clickable{
+                                showDialog = true
+                            }
+                    )
+                }
                 LazyColumn {
                     items (reminders){reminder->
                         ReminderItem(
