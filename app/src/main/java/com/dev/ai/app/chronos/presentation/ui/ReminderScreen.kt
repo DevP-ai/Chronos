@@ -54,6 +54,7 @@ import com.dev.ai.app.chronos.presentation.ui.component.ShimmerEffect
 import com.dev.ai.app.chronos.presentation.ui.component.ThemeSwitcher
 import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
 import com.dev.ai.app.chronos.ui.theme.ChronosTheme
+import com.dev.ai.app.chronos.util.NetworkUtils
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,6 +78,9 @@ fun ReminderScreen(
     var isFetchingGreeting by remember { mutableStateOf(false) }
     var showDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    val isConnected by NetworkUtils.observeNetworkStatus(context).collectAsState(initial = false)
+
 
     // Handle Implicit Intent to Share Message
     when (greetingState) {
@@ -166,140 +170,164 @@ fun ReminderScreen(
                 )
             }
         ){padding->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(padding)
-            ) {
-                Text(
-                    text = "Share AI Message",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center,
+            if(isConnected){
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 12.dp)
-                )
-                if (isFetchingGreeting) {
-                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.ai_animation))
-                    LottieAnimation(
-                        composition = composition,
-                        iterations = LottieConstants.IterateForever,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(200.dp)
-                            .padding(vertical = 8.dp)
-                    )
-                }else{
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        OutlinedTextField(
-                            value = promptText,
-                            onValueChange = { promptText = it },
-                            label = { Text("Enter prompt (e.g., birthday wish)") },
-                            modifier = Modifier
-                                .weight(1f)
-                                .padding(start = 12.dp)
-                        )
-                        IconButton(
-                            onClick = {
-                                if (promptText.isNotEmpty()) {
-                                    viewModel.fetchAIGreeting(promptText)
-                                    isFetchingGreeting = true
-                                    promptText = ""
-                                }
-                            },
-                            enabled = promptText.isNotEmpty()
-                        ) {
-                            Icon(
-                                Icons.Default.Send,
-                                contentDescription = "Share AI Message"
-                            )
-                        }
-                    }
-                }
-
-                if(showDialog){
-                    ReminderCreateDialog(
-                        viewModel = viewModel,
-                        onSave = {
-                            viewModel.saveReminder()
-                            showDialog = false
-                        },
-                        onDismiss = {
-                            showDialog = false
-                        }
-                    )
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(padding)
                 ) {
                     Text(
-                        text = "Reminders",
+                        text = "Share AI Message",
                         fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Icon(
-                        Icons.Default.Add,
-                        contentDescription = "Add Reminder",
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier
-                            .size(32.dp)
-                            .clickable{
-                                viewModel.editReminder(Reminder())
-                                showDialog = true
-                            }
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
                     )
-                }
-                if(showShimmer){
-                    ShimmerEffect()
-                }else if(reminders.isEmpty()){
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(padding),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.hello_animation))
+                    if (isFetchingGreeting) {
+                        val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.ai_animation))
                         LottieAnimation(
                             composition = composition,
                             iterations = LottieConstants.IterateForever,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(300.dp)
+                                .height(200.dp)
+                                .padding(vertical = 8.dp)
                         )
-                        Text(
-                            text = "No Reminder, click + to add reminder",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.padding(top = 4.dp)
+                    }else{
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            OutlinedTextField(
+                                value = promptText,
+                                onValueChange = { promptText = it },
+                                label = { Text("Enter prompt (e.g., birthday wish)") },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(start = 12.dp)
+                            )
+                            IconButton(
+                                onClick = {
+                                    if (promptText.isNotEmpty()) {
+                                        viewModel.fetchAIGreeting(promptText)
+                                        isFetchingGreeting = true
+                                        promptText = ""
+                                    }
+                                },
+                                enabled = promptText.isNotEmpty()
+                            ) {
+                                Icon(
+                                    Icons.Default.Send,
+                                    contentDescription = "Share AI Message"
+                                )
+                            }
+                        }
+                    }
+
+                    if(showDialog){
+                        ReminderCreateDialog(
+                            viewModel = viewModel,
+                            onSave = {
+                                viewModel.saveReminder()
+                                showDialog = false
+                            },
+                            onDismiss = {
+                                showDialog = false
+                            }
                         )
                     }
-                }
-                else{
-                    LazyColumn {
-                        items (reminders){reminder->
-                            ReminderItem(
-                                title = reminder.title,
-                                notes = reminder.notes,
-                                dateTime = reminder.dateTime,
-                                imageUrl = reminder.imageUrl,
-                                onEdit = {
-                                    viewModel.editReminder(reminder)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Reminders",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Add Reminder",
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable{
+                                    viewModel.editReminder(Reminder())
                                     showDialog = true
-                                },
-                                onDelete = {
-                                    viewModel.deleteReminder(reminder.id)
                                 }
+                        )
+                    }
+                    if(showShimmer){
+                        ShimmerEffect()
+                    }else if(reminders.isEmpty()){
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(padding),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.hello_animation))
+                            LottieAnimation(
+                                composition = composition,
+                                iterations = LottieConstants.IterateForever,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(300.dp)
+                            )
+                            Text(
+                                text = "No Reminder, click + to add reminder",
+                                style = MaterialTheme.typography.titleMedium,
+                                modifier = Modifier.padding(top = 4.dp)
                             )
                         }
                     }
+                    else{
+                        LazyColumn {
+                            items (reminders){reminder->
+                                ReminderItem(
+                                    title = reminder.title,
+                                    notes = reminder.notes,
+                                    dateTime = reminder.dateTime,
+                                    imageUrl = reminder.imageUrl,
+                                    onEdit = {
+                                        viewModel.editReminder(reminder)
+                                        showDialog = true
+                                    },
+                                    onDelete = {
+                                        viewModel.deleteReminder(reminder.id)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }else{
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.no_internet))
+                    LottieAnimation(
+                        composition = composition,
+                        iterations = LottieConstants.IterateForever,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                    )
+                    Text(
+                        text = "No Internet Connection",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 16.dp)
+                    )
                 }
             }
         }
