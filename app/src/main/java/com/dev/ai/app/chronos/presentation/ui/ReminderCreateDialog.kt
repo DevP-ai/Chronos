@@ -10,16 +10,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+
 
 @Composable
 fun ReminderCreateDialog(
-    modifier: Modifier = Modifier,
+    viewModel: ReminderViewModel = hiltViewModel(),
     onSave: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val state by viewModel.uiState.collectAsState()
 
     AlertDialog(
         title = {Text("Add Reminder")},
@@ -30,13 +36,13 @@ fun ReminderCreateDialog(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ){
                 OutlinedTextField(
-                    value ="",
-                    onValueChange = {},
+                    value = state.title,
+                    onValueChange = viewModel::onTitleChange,
                     label = {Text(text = "Title")}
                 )
                 OutlinedTextField(
-                    value ="",
-                    onValueChange = {},
+                    value = state.notes,
+                    onValueChange = viewModel::onNoteChange,
                     label = {Text(text = "Notes (optional)")}
                 )
 

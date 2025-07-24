@@ -29,13 +29,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.dev.ai.app.chronos.presentation.ui.component.ThemeSwitcher
+import com.dev.ai.app.chronos.presentation.viewModel.ReminderViewModel
 import com.dev.ai.app.chronos.ui.theme.ChronosTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(
-    modifier: Modifier = Modifier
+    viewModel: ReminderViewModel = hiltViewModel()
 ) {
     var isDarkTheme by remember { mutableStateOf(false) }
     var promptText by remember { mutableStateOf("") }
@@ -135,7 +137,9 @@ fun ReminderScreen(
 
                 if(showDialog){
                     ReminderCreateDialog(
+                        viewModel = viewModel,
                         onSave = {
+                            viewModel.saveReminder()
                             showDialog = false
                         },
                         onDismiss = {

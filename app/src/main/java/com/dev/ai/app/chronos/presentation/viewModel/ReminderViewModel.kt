@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -24,6 +25,13 @@ class ReminderViewModel @Inject constructor(
 
     val reminders: StateFlow<List<Reminder>> = reminderRepository.getReminders()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    fun onTitleChange(title: String){
+        _uiState.update { it.copy(title = title) }
+    }
+    fun onNoteChange(notes: String){
+        _uiState.update { it.copy(notes = notes) }
+    }
 
     fun saveReminder(){
         val state = _uiState.value
