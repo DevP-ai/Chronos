@@ -51,6 +51,7 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import kotlin.compareTo
 
 
 @Composable
@@ -118,6 +119,12 @@ fun ReminderCreateDialog(
         mutableStateOf(
             SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
                 .format(Date(if (state.dateTime == 0L) System.currentTimeMillis() + 60 * 1000 else state.dateTime))
+        )
+    }
+
+    val isFutureTime by remember(state.dateTime) {
+        mutableStateOf(
+            state.dateTime > System.currentTimeMillis() || state.dateTime == 0L
         )
     }
 
@@ -213,7 +220,6 @@ fun ReminderCreateDialog(
                     Button(onClick = {timePickerDialog.show()}) { Text("Pick Time") }
                 }
                 Text("Date/Time: $displayDateTime")
-
                 Button(
                     onClick = { showImagePickerMenu = true },
                     enabled = !uploading
@@ -276,7 +282,8 @@ fun ReminderCreateDialog(
             Button(
                 onClick = {
                     onSave()
-                }
+                },
+                enabled = state.title.isNotBlank() && isFutureTime && state.dateTime != 0L
             ) {
                 Text(text = "save")
             }
