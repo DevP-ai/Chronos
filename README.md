@@ -31,7 +31,8 @@ Chronos is a modern Android application built with **Jetpack Compose**, **Fireba
 - 🧩 **Responsive UI**: Fully built using Jetpack Compose for a modern experience.
 
 ---
-
+## ✅ Download APP
+https://drive.google.com/file/d/1haOoT8Cq54yQJaQzX1FaTl09EdDjV4eI/view?usp=drive_link
 ## 📸 Screenshots
 
 > _Add screenshots of major screens like Authentication, Reminder List, Create Reminder Dialog, AI Greeting, etc._
